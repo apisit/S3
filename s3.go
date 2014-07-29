@@ -45,6 +45,10 @@ func IsValidBucket(bucket string) bool {
 	return valid
 }
 
+func Init(accesskey string, secretKey string) *Client {
+	return &Client{&Auth{accesskey, secretKey, ""}}
+}
+
 type Client struct {
 	*Auth
 }
