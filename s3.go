@@ -85,12 +85,5 @@ func (c *Client) Upload(key, bucket string, filename string) error {
 	if readErr != nil {
 		return readErr
 	}
-	accessKey := "key"
-	secretKey := "key"
-	keyFilename := "something.jpg"
-	filename := "something.jpg"
-	bucketName := "sps-photos"
-	amazonS3 := s3.Init(accessKey, secretKey)
-	amazonS3.Upload(keyFilename, bucketName, filename)
 	return nil
 }
