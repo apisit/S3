@@ -65,7 +65,7 @@ func (c *Client) keyURL(bucket, key string) string {
 	return c.bucketURL(bucket) + key
 }
 
-func (c *Client) upload(key, bucket string, filename string) error {
+func (c *Client) Upload(key, bucket string, filename string) error {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
