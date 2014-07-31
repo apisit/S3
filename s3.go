@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"mime"
 	"net/http"
+	"path"
 	"strings"
 	"time"
 )
@@ -73,6 +75,9 @@ func (c *Client) Upload(key, bucket string, filename string) (fileUrl string, er
 	url := c.keyURL(bucket, key)
 	req, _ := http.NewRequest("PUT", url, nil)
 	req.Header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
+	ext := path.Ext(filename)
+	mimeType := mime.TypeByExtension(ext)
+	req.Header.Set("Content-Type", mimeType)
 	req.ContentLength = int64(len(data))
 	body := bytes.NewBuffer(data)
 	req.Body = ioutil.NopCloser(body)
