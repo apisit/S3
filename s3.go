@@ -65,10 +65,10 @@ func (c *Client) keyURL(bucket, key string) string {
 	return c.bucketURL(bucket) + key
 }
 
-func (c *Client) Upload(key, bucket string, filename string) error {
+func (c *Client) Upload(key, bucket string, filename string) (fileUrl string, err error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return err
+		return "", err
 	}
 	url := c.keyURL(bucket, key)
 	req, _ := http.NewRequest("PUT", url, nil)
@@ -83,7 +83,8 @@ func (c *Client) Upload(key, bucket string, filename string) error {
 	_, readErr := ioutil.ReadAll(res.Body)
 
 	if readErr != nil {
-		return readErr
+		return "", readErr
 	}
-	return nil
+	full := fmt.Sprintf("%s", url)
+	return full, nil
 }
