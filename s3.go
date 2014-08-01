@@ -4,6 +4,7 @@ package s3
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"mime"
@@ -124,17 +125,17 @@ func (c *Client) ListBucket(bucket string) (result *ListBucketResults, err error
 //	Upload file to given bucket
 //	File key
 //	Bucket name
-//	Physical path to the file which will be uploaded to S3
+//	data file
 //	Return full file url if succeeded
-func (c *Client) Upload(key, bucket string, filename string) (fileUrl string, err error) {
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return "", err
+func (c *Client) Upload(key, bucket string, data []byte) (fileUrl string, err error) {
+	if data == nil {
+		var errorEmptyData = errors.New("data cannot be null")
+		return "", errorEmptyData
 	}
 	url := c.keyURL(bucket, key)
 	req, _ := http.NewRequest("PUT", url, nil)
 	req.Header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
-	ext := path.Ext(filename)
+	ext := path.Ext(key)
 	mimeType := mime.TypeByExtension(ext)
 	req.Header.Set("Content-Type", mimeType)
 	req.ContentLength = int64(len(data))
