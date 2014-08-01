@@ -13,3 +13,15 @@ func TestUpload(t *testing.T) {
 	}
 	fmt.Printf("%s", file)
 }
+
+func TestUpload(t *testing.T) {
+	s3 := Init("", "")
+	bucketResult, err := s3.ListBucket("sps-photos")
+	if err != nil {
+		t.Error("upload error")
+	}
+
+	for k, v := range bucketResult.Contents {
+		fmt.Printf("%s %s\n", k, v.Key)
+	}
+}

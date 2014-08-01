@@ -3,11 +3,13 @@ package s3
 
 import (
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"mime"
 	"net/http"
 	"path"
+	"sort"
 	"strings"
 	"time"
 )
@@ -57,6 +59,33 @@ type Client struct {
 	*Auth
 }
 
+type Item struct {
+	Key      string
+	Size     int64
+	Index    int
+	ImageUrl string
+}
+
+type ListBucketResults struct {
+	Contents []Item
+}
+
+type SortedItems []Item
+
+func (s SortedItems) Len() int {
+	return len(s)
+}
+
+func (s SortedItems) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+type ByKey struct{ SortedItems }
+
+func (s ByKey) Less(i, j int) bool {
+	return s.SortedItems[i].Key > s.SortedItems[j].Key
+}
+
 //	Bucket url
 func (c *Client) bucketURL(bucket string) string {
 	if IsValidBucket(bucket) && !strings.Contains(bucket, ".") {
@@ -68,6 +97,24 @@ func (c *Client) bucketURL(bucket string) string {
 //	Full url with file key
 func (c *Client) keyURL(bucket, key string) string {
 	return c.bucketURL(bucket) + key
+}
+
+func (c *Client) ListBucket(bucket string) (result *ListBucketResults, err error) {
+	url := fmt.Sprintf("%s?max-keys=800", c.bucketURL(bucket))
+	req, _ := http.NewRequest("GET", url, nil)
+	c.Auth.SignRequest(req)
+	httpClient := &http.Client{}
+	bucketRes, requestErr := httpClient.Do(req)
+	if requestErr != nil {
+		return nil, requestErr
+	}
+	defer bucketRes.Body.Close()
+	var bucketResult ListBucketResults
+	if err := xml.NewDecoder(bucketRes.Body).Decode(&bucketResult); err != nil {
+		return nil, err
+	}
+	sort.Sort(ByKey{bucketResult.Contents})
+	return &bucketResult, nil
 }
 
 //	Upload file to given bucket
