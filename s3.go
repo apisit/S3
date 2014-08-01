@@ -1,3 +1,4 @@
+// Package S3 provides the ability to upload file to Aamzon S3
 package s3
 
 import (
@@ -47,6 +48,7 @@ func IsValidBucket(bucket string) bool {
 	return valid
 }
 
+//	Init method take Amazon credential. Acesskey and SecretKey
 func Init(accesskey string, secretKey string) *Client {
 	return &Client{&Auth{accesskey, secretKey, ""}}
 }
@@ -55,7 +57,7 @@ type Client struct {
 	*Auth
 }
 
-// bucketURL returns the URL prefix of the bucket, with trailing slash
+//	Bucket url
 func (c *Client) bucketURL(bucket string) string {
 	if IsValidBucket(bucket) && !strings.Contains(bucket, ".") {
 		return fmt.Sprintf("https://%s.%s/", bucket, c.hostname())
@@ -63,10 +65,16 @@ func (c *Client) bucketURL(bucket string) string {
 	return fmt.Sprintf("https://%s/%s/", c.hostname(), bucket)
 }
 
+//	Full url with file key
 func (c *Client) keyURL(bucket, key string) string {
 	return c.bucketURL(bucket) + key
 }
 
+//	Upload file to given bucket
+//	File key
+//	Bucket name
+//	Physical path to the file which will be uploaded to S3
+//	Return full file url if succeeded
 func (c *Client) Upload(key, bucket string, filename string) (fileUrl string, err error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
