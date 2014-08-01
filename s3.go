@@ -116,7 +116,7 @@ func (c *Client) ListBucket(bucket string) (result *ListBucketResults, err error
 	}
 	sort.Sort(ByKey{bucketResult.Contents})
 	for k, _ := range bucketResult.Contents {
-		bucketResult.Contents[k].ImageUrl = fmt.Sprintf("%s/%s", bucketUrl, bucketResult.Contents[k].Key)
+		bucketResult.Contents[k].ImageUrl = fmt.Sprintf("%s%s", bucketUrl, bucketResult.Contents[k].Key)
 	}
 	return &bucketResult, nil
 }
