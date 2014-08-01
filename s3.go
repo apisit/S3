@@ -100,7 +100,8 @@ func (c *Client) keyURL(bucket, key string) string {
 }
 
 func (c *Client) ListBucket(bucket string) (result *ListBucketResults, err error) {
-	url := fmt.Sprintf("%s?max-keys=800", c.bucketURL(bucket))
+	bucketUrl := c.bucketURL(bucket)
+	url := fmt.Sprintf("%s?max-keys=800", bucketUrl)
 	req, _ := http.NewRequest("GET", url, nil)
 	c.Auth.SignRequest(req)
 	httpClient := &http.Client{}
@@ -114,6 +115,9 @@ func (c *Client) ListBucket(bucket string) (result *ListBucketResults, err error
 		return nil, err
 	}
 	sort.Sort(ByKey{bucketResult.Contents})
+	for k, _ := range bucketResult.Contents {
+		bucketResult.Contents[k].ImageUrl = fmt.Sprintf("%s/%s", bucketUrl, bucketResult.Contents[k].Key)
+	}
 	return &bucketResult, nil
 }
 
