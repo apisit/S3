@@ -53,7 +53,7 @@ func IsValidBucket(bucket string) bool {
 
 //	Init method take Amazon credential. Acesskey and SecretKey
 func Init(accesskey string, secretKey string) *Client {
-	return &Client{&Auth{accesskey, secretKey, ""}}
+	return &Client{&Auth{accesskey, secretKey, "s3-eu-west-1.amazonaws.com"}}
 }
 
 type Client struct {
@@ -138,12 +138,17 @@ func (c *Client) Upload(key, bucket string, data []byte) (fileUrl string, err er
 	ext := path.Ext(key)
 	mimeType := mime.TypeByExtension(ext)
 	req.Header.Set("Content-Type", mimeType)
+	req.Header.Set("Cache-Control", "max-age=94608000")
+	req.Header.Set("x-amz-meta-Cache-Control", "max-age=94608000")
 	req.ContentLength = int64(len(data))
 	body := bytes.NewBuffer(data)
 	req.Body = ioutil.NopCloser(body)
 	c.Auth.SignRequest(req)
 	httpClient := &http.Client{}
-	res, _ := httpClient.Do(req)
+	res, err := httpClient.Do(req)
+	if err != nil {
+		return "", err
+	}
 	defer res.Body.Close()
 	_, readErr := ioutil.ReadAll(res.Body)
 
